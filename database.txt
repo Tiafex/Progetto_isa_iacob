@@ -1,0 +1,27 @@
+drop database ricette_db;
+
+-- Creazione del database ricette_db
+CREATE DATABASE IF NOT EXISTS ricette_db ;
+
+-- Selezione del database
+USE ricette_db;
+
+-- Creazione della tabella users
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+
+-- Creazione della tabella recipes
+CREATE TABLE IF NOT EXISTS recipes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    title VARCHAR(100) NOT NULL,
+    description TEXT,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+
+
+

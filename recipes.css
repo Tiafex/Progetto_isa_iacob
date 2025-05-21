@@ -1,0 +1,390 @@
+/* Stile generale */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #ff7b00;
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-repeat: repeat;
+    padding: 20px;
+}
+
+h1 {
+    color: #000000;
+    font-size: 36px;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    font-weight: 600;
+    text-align: center;
+}
+
+h2 {
+    font-weight: 600;
+    font-size: 1.8em;
+    color: #e77935;
+    margin: 25px 0 15px 0;
+}
+
+h3 {
+    font-weight: 600;
+    font-size: 1.3em;
+    color: #e77935;
+    margin-bottom: 10px;
+}
+
+p {
+    font-weight: 400;
+    font-size: 1em;
+    line-height: 1.7;
+    color: #555;
+}
+
+label {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 5px;
+    display: block;
+    font-size: 1.1em;
+}
+
+input[type="text"],
+textarea,
+input[type="password"] {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 16px;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+    outline: none;
+}
+
+input[type="text"]:focus,
+textarea:focus,
+input[type="password"]:focus {
+    border-color: #e77935;
+    box-shadow: 0 0 0 3px rgba(231, 121, 53, 0.1);
+}
+
+button,
+button[type="submit"] {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    background-color: #e77935;
+    color: white;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+button:hover,
+button[type="submit"]:hover {
+    background-color: #d06a29;
+    transform: scale(1.02);
+}
+
+button:active,
+button[type="submit"]:active {
+    transform: scale(0.98);
+}
+
+.header {
+    text-align: center;
+    padding: 20px 0;
+    width: 100%;
+    max-width: 800px;
+}
+
+.header a {
+    color: #e77935;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    font-size: 1.1em;
+}
+
+.header a:hover {
+    color: #d06a29;
+    text-decoration: underline;
+}
+
+.recipe-card {
+    background-color: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 30px;
+    margin-top: 15px;
+    box-shadow: 0 8px 24px rgba(231, 121, 53, 0.15);
+    transition: transform 0.3s ease, box-shadow 0.2s ease;
+    position: relative;
+    border-top: 5px solid #e77935;
+}
+
+.recipe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(231, 121, 53, 0.2);
+}
+
+.container {
+    background-color: white;
+    border-radius: 15px;
+    padding: 30px;
+    width: 100%;
+    max-width: 800px;
+    box-shadow: 0 8px 24px rgba(231, 121, 53, 0.15);
+    transition: transform 0.3s ease;
+    position: relative;
+    border-top: 5px solid #e77935;
+    margin: 0 auto;
+}
+
+.container:hover {
+    transform: translateY(-5px);
+}
+
+form {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+form label {
+    display: block;
+    margin-bottom: 8px;
+    margin-top: 15px;
+}
+
+form input,
+form textarea {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+
+/* Stili per il pulsante elimina */
+
+.delete-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    font-size: 1.2em;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(231, 76, 60, 0.3);
+}
+
+.delete-btn:hover {
+    background-color: #c0392b;
+    transform: scale(1.1);
+    box-shadow: 0 3px 8px rgba(231, 76, 60, 0.5);
+}
+
+.delete-btn:active {
+    transform: scale(0.95);
+}
+
+
+/* Animazione di conferma */
+
+.recipe-card.deleting {
+    animation: fadeOut 0.5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+}
+
+
+/* Modal di conferma eliminazione */
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 8px 24px rgba(231, 121, 53, 0.15);
+    max-width: 450px;
+    width: 90%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border-top: 5px solid #e77935;
+}
+
+.modal-content h3 {
+    font-weight: 600;
+    font-size: 1.3em;
+    color: #e77935;
+    margin-bottom: 15px;
+}
+
+.modal-content p {
+    font-weight: 400;
+    font-size: 1em;
+    line-height: 1.7;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+.modal-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.btn-confirm {
+    background-color: #e74c3c;
+    color: white;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-confirm:hover {
+    background-color: #c0392b;
+    transform: scale(1.02);
+}
+
+.btn-confirm:active {
+    transform: scale(0.98);
+}
+
+.btn-cancel {
+    background-color: #95a5a6;
+    color: white;
+    padding: 14px 24px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background-color: #7f8c8d;
+    transform: scale(1.02);
+}
+
+.btn-cancel:active {
+    transform: scale(0.98);
+}
+
+
+/* Link style */
+
+a {
+    color: #e77935;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+a:hover {
+    color: #d06a29;
+    text-decoration: underline;
+}
+
+
+/* Error message */
+
+p[style*="color:red"] {
+    background-color: #fff0f0;
+    border-left: 4px solid #ff3b30;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+
+/* Responsive adjustments */
+
+@media (max-width: 768px) {
+    .container,
+    .recipe-card {
+        padding: 20px;
+        border-radius: 10px;
+    }
+    .header h1,
+    h1 {
+        font-size: 28px;
+    }
+    button,
+    button[type="submit"],
+    .btn-confirm,
+    .btn-cancel {
+        padding: 12px 20px;
+    }
+    .modal-content {
+        padding: 20px;
+        max-width: 350px;
+    }
+}
