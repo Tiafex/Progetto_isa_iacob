@@ -2,25 +2,16 @@
 session_start();
 require 'config.php';
 
-// Debug: mostra informazioni di sessione
-echo "<!-- DEBUG INFO: ";
-echo "Session ID: " . session_id() . " | ";
-echo "User ID: " . ($_SESSION['user_id'] ?? 'NOT SET') . " | ";
-echo "Is Admin: " . ($_SESSION['is_admin'] ?? 'NOT SET') . " | ";
-echo "Username: " . ($_SESSION['username'] ?? 'NOT SET');
-echo " -->";
 
 // Verifica se l'utente è loggato
 if (!isset($_SESSION['user_id'])) {
-    echo "<!-- DEBUG: User not logged in, redirecting to login -->";
-    header('Location: login.php');
+ header('Location: login.php');
     exit();
 }
 
 // Verifica se l'utente è admin
 if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
-    echo "<!-- DEBUG: User is not admin, is_admin = " . ($_SESSION['is_admin'] ?? 'NOT SET') . " -->";
-    
+   
     // Controlla nel database per sicurezza
     $user_id = $_SESSION['user_id'];
     $stmt = $conn->prepare("SELECT is_admin, username FROM users WHERE id = ?");
@@ -30,13 +21,11 @@ if (!isset($_SESSION['is_admin']) || $_SESSION['is_admin'] != 1) {
     
     if ($result->num_rows > 0) {
         $user_data = $result->fetch_assoc();
-        echo "<!-- DEBUG: Database check - Username: " . $user_data['username'] . ", is_admin: " . $user_data['is_admin'] . " -->";
         
         if ($user_data['is_admin'] == 1) {
             // Aggiorna la sessione se il database dice che è admin
             $_SESSION['is_admin'] = 1;
-            echo "<!-- DEBUG: Session updated with admin privileges -->";
-        } else {
+         } else {
             // Non è admin, reindirizza
             header('Location: recipes.php?error=access_denied');
             exit();
@@ -134,28 +123,24 @@ try {
     $stats['total_recipes'] = $result->fetch_assoc()['total_recipes'];
 
     // Ricetta più recente
-    $result = $conn->query("SELECT r.title, u.username, r.created_at 
+    $result = $conn->query("SELECT r.title, u.username
                            FROM recipes r 
-                           INNER JOIN users u ON r.user_id = u.id 
-                           ORDER BY r.created_at DESC LIMIT 1");
+                           INNER JOIN users u ON r.user_id = u.id");
     $latest_recipe = $result->fetch_assoc();
 
     // Ottenere tutti gli utenti con il conteggio delle ricette
-    $users_query = "SELECT u.id, u.username, u.is_admin, u.created_at,
-                           COUNT(r.id) as recipe_count
+    $users_query = "SELECT u.id, u.username, u.is_admin, COUNT(r.id) as recipe_count
                     FROM users u
                     LEFT JOIN recipes r ON u.id = r.user_id
-                    GROUP BY u.id, u.username, u.is_admin, u.created_at
-                    ORDER BY u.created_at DESC";
+                    GROUP BY u.id, u.username, u.is_admin";
     $users_result = $conn->query($users_query);
     $users = $users_result->fetch_all(MYSQLI_ASSOC);
 
     // Ottenere tutte le ricette con informazioni utente
-    $recipes_query = "SELECT r.id, r.title, r.description, r.created_at,
+    $recipes_query = "SELECT r.id, r.title, r.description,
                              u.username, u.id as user_id
                       FROM recipes r
-                      INNER JOIN users u ON r.user_id = u.id
-                      ORDER BY r.created_at DESC";
+                      INNER JOIN users u ON r.user_id = u.id";
     $recipes_result = $conn->query($recipes_query);
     $recipes = $recipes_result->fetch_all(MYSQLI_ASSOC);
     
@@ -176,269 +161,7 @@ try {
     <title>Pannello Admin - Gestione Ricette</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/x-icon" href="https://e7.pngegg.com/pngimages/565/647/png-clipart-chefs-uniform-hat-cook-chef-hat-askew-angle-white.png">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            color: #333;
-        }
-
-        .admin-header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px 0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .admin-header .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .admin-header h1 {
-            color: #667eea;
-            font-weight: 700;
-        }
-
-        .admin-nav {
-            display: flex;
-            gap: 20px;
-            align-items: center;
-        }
-
-        .admin-nav a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 500;
-            padding: 8px 16px;
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-
-        .admin-nav a:hover {
-            background: #667eea;
-            color: white;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .alert {
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            font-weight: 500;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
-            transition: transform 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .stat-number {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .stat-label {
-            color: #666;
-            font-weight: 500;
-        }
-
-        .section {
-            background: white;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-
-        .section h2 {
-            color: #333;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #667eea;
-            padding-bottom: 10px;
-        }
-
-        .table-container {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #333;
-        }
-
-        tr:hover {
-            background: #f8f9fa;
-        }
-
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 2px;
-        }
-
-        .btn-danger {
-            background: #e74c3c;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #c0392b;
-        }
-
-        .btn-warning {
-            background: #f39c12;
-            color: white;
-        }
-
-        .btn-warning:hover {
-            background: #e67e22;
-        }
-
-        .btn-success {
-            background: #27ae60;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #229954;
-        }
-
-        .admin-badge {
-            background: #667eea;
-            color: white;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: 500;
-        }
-
-        .description-cell {
-            max-width: 200px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-        }
-
-        .modal-content {
-            background: white;
-            margin: 15% auto;
-            padding: 25px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        .modal-buttons {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-        }
-
-        .debug-info {
-            background: #ffe6e6;
-            color: #d32f2f;
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-family: monospace;
-            font-size: 12px;
-        }
-
-        @media (max-width: 768px) {
-            .admin-header .container {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .admin-nav {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="admin.css" />
 </head>
 <body>
     <div class="admin-header">
@@ -477,16 +200,8 @@ try {
             </div>
         <?php endif; ?>
 
-        <!-- Debug info (rimuovi in produzione) -->
-        <div class="debug-info">
-            <strong>Debug Info:</strong><br>
-            User ID: <?php echo $_SESSION['user_id'] ?? 'NOT SET'; ?><br>
-            Username: <?php echo $_SESSION['username'] ?? 'NOT SET'; ?><br>
-            Is Admin: <?php echo $_SESSION['is_admin'] ?? 'NOT SET'; ?><br>
-            Session ID: <?php echo session_id(); ?>
-        </div>
-
-        <!-- Statistiche -->
+       
+      
         <div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-number"><?php echo $stats['total_users']; ?></div>
@@ -510,11 +225,11 @@ try {
         <div class="section">
             <h2>📈 Ultima Attività</h2>
             <p><strong><?php echo htmlspecialchars($latest_recipe['username']); ?></strong> ha aggiunto "<strong><?php echo htmlspecialchars($latest_recipe['title']); ?></strong>" 
-            il <?php echo date('d/m/Y H:i', strtotime($latest_recipe['created_at'])); ?></p>
         </div>
         <?php endif; ?>
 
-        <!-- Gestione Utenti -->
+        // gestione utenti
+
         <div class="section">
             <h2>👥 Gestione Utenti</h2>
             <div class="table-container">
@@ -525,7 +240,6 @@ try {
                             <th>Username</th>
                             <th>Ruolo</th>
                             <th>Ricette</th>
-                            <th>Registrato</th>
                             <th>Azioni</th>
                         </tr>
                     </thead>
@@ -542,7 +256,6 @@ try {
                                 <?php endif; ?>
                             </td>
                             <td><?php echo $user['recipe_count']; ?></td>
-                            <td><?php echo date('d/m/Y', strtotime($user['created_at'])); ?></td>
                             <td>
                                 <?php if ($user['id'] != $admin_id): ?>
                                     <button class="btn btn-warning" onclick="toggleAdmin(<?php echo $user['id']; ?>, '<?php echo htmlspecialchars($user['username']); ?>', <?php echo $user['is_admin'] ? 0 : 1; ?>)">
@@ -562,7 +275,7 @@ try {
             </div>
         </div>
 
-        <!-- Gestione Ricette -->
+        // gestione ricette
         <div class="section">
             <h2>🍽️ Gestione Ricette</h2>
             <div class="table-container">
@@ -573,7 +286,6 @@ try {
                             <th>Titolo</th>
                             <th>Descrizione</th>
                             <th>Autore</th>
-                            <th>Creata</th>
                             <th>Azioni</th>
                         </tr>
                     </thead>
@@ -586,7 +298,6 @@ try {
                                 <?php echo htmlspecialchars(substr($recipe['description'], 0, 50)) . (strlen($recipe['description']) > 50 ? '...' : ''); ?>
                             </td>
                             <td><?php echo htmlspecialchars($recipe['username']); ?></td>
-                            <td><?php echo date('d/m/Y H:i', strtotime($recipe['created_at'])); ?></td>
                             <td>
                                 <button class="btn btn-danger" onclick="confirmDeleteRecipe(<?php echo $recipe['id']; ?>, '<?php echo htmlspecialchars($recipe['title']); ?>')">
                                     Elimina
@@ -600,7 +311,7 @@ try {
         </div>
     </div>
 
-    <!-- Modal di conferma -->
+    // conferma azione
     <div id="confirmModal" class="modal">
         <div class="modal-content">
             <h3 id="modalTitle">Conferma Azione</h3>
@@ -612,7 +323,7 @@ try {
         </div>
     </div>
 
-    <!-- Form nascosti per le azioni -->
+     // form nascosti
     <form id="actionForm" method="POST" style="display: none;">
         <input type="hidden" name="action" id="actionType">
         <input type="hidden" name="user_id" id="userId">
@@ -666,7 +377,7 @@ try {
             document.getElementById('confirmModal').style.display = 'none';
         }
 
-        // Chiudi modal cliccando fuori o con ESC
+        // Chiudi azione cliccando fuori o con ESC
         window.onclick = function(event) {
             const modal = document.getElementById('confirmModal');
             if (event.target == modal) {

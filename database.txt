@@ -22,6 +22,9 @@ CREATE TABLE IF NOT EXISTS recipes (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+alter table users add column is_admin tinyiny(1) default 0;
 
+insert into users (username, password, is_admin)
+values ('admin', 'admin', 1);
 
 

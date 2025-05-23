@@ -4,7 +4,7 @@ require 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
+    $password = $_POST['password'];
 
     if (empty($username) || empty($password)) {
         $error = "Inserisci username e password.";
@@ -19,9 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = "Username già esistente.";
         } else {
             // Inserisci nuovo utente
-            $hash_password = password_hash($password, PASSWORD_DEFAULT);
             $stmt = $conn->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-            $stmt->bind_param("ss", $username, $hash_password);
+            $stmt->bind_param("ss", $username, $password);
             if ($stmt->execute()) {
                 header('Location: login.php');
                 exit();

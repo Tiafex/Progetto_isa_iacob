@@ -3,8 +3,8 @@ session_start();
 require 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $username = trim($_POST['username']);
-    $password = trim($_POST['password']);
+    $username = $_POST['username'];
+    $password = $_POST['password'];
 
     if (empty($username) || empty($password)) {
         $error = "Inserisci username e password.";
@@ -14,9 +14,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $stmt->execute();
         $result = $stmt->get_result();
 
-        if ($result->num_rows == 1) {
+        if ($result->num_rows > 0) {
             $row = $result->fetch_assoc();
-           if (password_verify($password, $row['password'])) {
+        if ($password == $row['password']) {
     $_SESSION['user_id'] = $row['id'];
     $_SESSION['username'] = $username;
     $_SESSION['is_admin'] = $row['is_admin']; // Importante!
@@ -49,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </div>
 <div class="rcorners2">
     <?php if (isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
-    <form method="POST" action="">
+    <form method="POST" action="login.php">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required />
 
